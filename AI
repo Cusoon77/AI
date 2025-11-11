@@ -1,0 +1,51 @@
+
+from kaggle_secrets import UserSecretsClient
+from google.adk.agents import Agent
+from google.adk.models.google_llm import Gemini
+from google.adk.runners import InMemoryRunner
+from google.adk.tools import google_search
+from google.genai import types
+import os, asyncio
+
+print("🚀 Setting up your agent...")
+
+# --- Load API key directly ---
+GOOGLE_API_KEY = UserSecretsClient().get_secret("GOOGLE_API_KEY")
+os.environ["GOOGLE_API_KEY"] = GOOGLE_API_KEY
+print("✅ Gemini API key loaded.")
+
+# --- Retry settings ---
+retry_config = types.HttpRetryOptions(
+    attempts=3,
+    exp_base=5,
+    initial_delay=1,
+    http_status_codes=[429, 500, 503]
+)
+
+root_agent = Agent(
+    name="shogun_assistant",
+    model=Gemini(
+        model="gemini-2.5-flash-lite",
+        retry_options=retry_config,
+        api_key=GOOGLE_API_KEY   # 👈 key passed directly here
+    ),
+    description="Cybersecurity assistant with Google Search.",
+    instruction="You are a SOC analyst. Use Google Search for current cyber info.",
+    tools=[google_search],
+)
+
+runner = InMemoryRunner(agent=root_agent)
+
+# --- Function to ask a question ---
+async def ask_agent(question):
+    print(f"\n🧠 Question: {question}\n")
+    responses = await runner.run_debug(question)
+    print("💬 Agent Response:\n")
+    for i, message in enumerate(responses, start=1):
+        if hasattr(message, "text"):
+            print(f"[{i}] {message.text}")
+        else:
+            print(f"[{i}] {message}")
+
+# --- Ask something ---
+await ask_agent("Explain what the Agent Development Kit (ADK) is.")
