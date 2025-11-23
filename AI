@@ -7,7 +7,7 @@ from google.adk.tools import google_search
 from google.genai import types
 import os, asyncio
 
-print("🚀 Setting up your agent...")
+print("🚀 Setting up your agent...")    
 
 # --- Load API key directly ---
 GOOGLE_API_KEY = UserSecretsClient().get_secret("GOOGLE_API_KEY")
