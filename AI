@@ -35,7 +35,6 @@ root_agent = Agent(
 )
 
 runner = InMemoryRunner(agent=root_agent)
-
 # --- Function to ask a question ---
 async def ask_agent(question):
     print(f"\n🧠 Question: {question}\n")
